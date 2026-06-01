@@ -12,16 +12,16 @@ INGEST_INTERVAL_SECONDS = int(os.getenv("INGEST_INTERVAL_SECONDS", "3600"))
 def run_once() -> None:
     url = f"{BACKEND_URL}/ingest/run"
     with httpx.Client(timeout=30) as client:
-      response = client.post(url)
-      response.raise_for_status()
-      print(
-          {
-              "timestamp": datetime.now(UTC).isoformat(),
-              "status": "ingestion_complete",
-              "response": response.json(),
-          },
-          flush=True,
-      )
+        response = client.post(url)
+        response.raise_for_status()
+        print(
+            {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "status": "ingestion_complete",
+                "response": response.json(),
+            },
+            flush=True,
+        )
 
 
 def run_forever() -> None:
