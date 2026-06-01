@@ -113,51 +113,93 @@ OpenAI:
 
 The system ingests data every hour from external sources.
 
-MVP sources:
+Recommended MVP sources:
 
-* NewsAPI
 * OpenWeather API
+* NewsAPI
+* UN Comtrade API
+* Kaggle supply chain dataset, such as Supply Chain Dataset or DataCo Supply Chain Dataset
+
+Optional future source:
+
 * Port Data API or CSV disruption data
-
-Optional future sources:
-
-* UN Comtrade API for trade trend charts
-* Kaggle historical datasets for offline analysis or future prediction work
 
 ```mermaid
 flowchart TD
     Scheduler[Ingestion Scheduler Every Hour]
-    FetchNews[Fetch News Articles]
     FetchWeather[Fetch Weather Alerts]
-    FetchPorts[Fetch Port or CSV Events]
+    FetchNews[Fetch News Articles]
+    FetchTrade[Fetch Trade Data]
+    LoadHistorical[Load Historical Dataset]
     Normalize[Clean and Normalize Data]
     StoreEvents[Store Events in Supabase]
+    StoreAnalytics[Store Trade and Historical Metrics]
     Embed[Generate Embeddings]
     StoreVectors[Store Vectors in Qdrant]
     Score[Update Regional Risk Scores]
 
-    Scheduler --> FetchNews
     Scheduler --> FetchWeather
-    Scheduler --> FetchPorts
-    FetchNews --> Normalize
+    Scheduler --> FetchNews
+    Scheduler --> FetchTrade
+    Scheduler --> LoadHistorical
     FetchWeather --> Normalize
-    FetchPorts --> Normalize
+    FetchNews --> Normalize
+    FetchTrade --> StoreAnalytics
+    LoadHistorical --> StoreAnalytics
     Normalize --> StoreEvents
     Normalize --> Embed
     Embed --> StoreVectors
     StoreEvents --> Score
+    StoreAnalytics --> Score
     StoreVectors --> Score
 ```
 
 ## Ingestion Steps
 
 1. The ingestion scheduler starts the hourly job.
-2. The backend fetches data from external APIs.
-3. Raw data is cleaned and converted into a common format.
-4. Important event details are saved in Supabase.
-5. Text content is embedded using an OpenAI embedding model.
-6. Embeddings are saved in Qdrant.
-7. Regional risk scores are recalculated.
+2. The backend fetches weather alerts from OpenWeather API.
+3. The backend fetches supply chain news from NewsAPI.
+4. The ingestion service fetches trade activity from UN Comtrade API.
+5. Historical Kaggle data is loaded as a seeded dataset or periodic batch import.
+6. Raw data is cleaned and converted into a common format.
+7. Important event details are saved in Supabase.
+8. News and disruption text is embedded using an OpenAI embedding model.
+9. Embeddings are saved in Qdrant.
+10. Regional risk scores are recalculated.
+
+## Data Source Roles
+
+OpenWeather API:
+
+* Storms
+* Heavy rain
+* Flood risks
+* Temperature extremes
+* Wind alerts
+
+NewsAPI:
+
+* Supply chain disruption articles
+* Shipping delays
+* Port congestion
+* Logistics crisis reports
+* Container shortage and factory shutdown news
+
+UN Comtrade API:
+
+* Import volumes
+* Export volumes
+* Country trade activity
+* Dashboard analytics and trend charts
+
+Kaggle historical dataset:
+
+* Orders
+* Shipments
+* Delivery status
+* Delays
+* Warehouses
+* Historical trends and risk score calibration
 
 ---
 
@@ -284,6 +326,8 @@ Inputs:
 * Weather severity
 * Disruption frequency
 * Negative sentiment
+* Historical delay patterns
+* Trade activity changes
 
 ```mermaid
 flowchart LR
@@ -314,9 +358,11 @@ For the MVP, the scoring model should be simple and explainable.
 
 Example:
 
-* Weather severity contributes up to 40 points
-* Disruption frequency contributes up to 40 points
-* Negative sentiment contributes up to 20 points
+* Weather severity contributes up to 30 points
+* News disruption frequency contributes up to 25 points
+* Negative news sentiment contributes up to 20 points
+* Historical delay patterns contribute up to 15 points
+* Trade activity changes contribute up to 10 points
 
 Classification:
 
@@ -360,8 +406,33 @@ erDiagram
         string embedding_id
     }
 
+    trade_metrics {
+        string id
+        string country
+        string partner_country
+        string trade_flow
+        string commodity
+        string period
+        float trade_value
+        float quantity
+        datetime created_at
+    }
+
+    historical_shipments {
+        string id
+        string order_id
+        string region
+        string warehouse
+        string delivery_status
+        int delay_days
+        string shipping_mode
+        datetime created_at
+    }
+
     regions ||--o{ disruptions : has
     documents ||--o{ disruptions : describes
+    regions ||--o{ trade_metrics : tracks
+    regions ||--o{ historical_shipments : contains
 ```
 
 ## Tables
@@ -377,6 +448,14 @@ disruptions:
 documents:
 
 * Stores metadata for documents that also have vectors in Qdrant
+
+trade_metrics:
+
+* Stores import, export, and country trade activity from UN Comtrade
+
+historical_shipments:
+
+* Stores selected historical shipment and delivery data from Kaggle datasets
 
 ---
 
@@ -476,6 +555,9 @@ The following values should be stored securely in local `.env` files for develop
 * `QDRANT_API_KEY`
 * `NEWS_API_KEY`
 * `OPENWEATHER_API_KEY`
+* `UN_COMTRADE_API_KEY`
+* `KAGGLE_USERNAME`
+* `KAGGLE_KEY`
 * `PORT_DATA_API_KEY`
 
 ---

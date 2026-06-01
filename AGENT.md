@@ -128,13 +128,14 @@ docs/
 ## Phase 4: Ingestion Pipeline
 
 1. Create one ingestion job.
-2. Start with NewsAPI.
+2. Start with OpenWeather API for weather risk signals.
 3. Normalize external data into a consistent internal shape.
 4. Store event metadata in Supabase.
 5. Generate embeddings and store vectors in Qdrant.
-6. Add OpenWeather after the news ingestion works.
-7. Add port data or CSV disruption data after the core flow is stable.
-8. Treat UN Comtrade and Kaggle datasets as optional future extensions unless the user explicitly asks for them.
+6. Add NewsAPI as the primary RAG knowledge source.
+7. Add UN Comtrade API for import, export, and country trade activity charts.
+8. Add a Kaggle supply chain dataset as a seeded historical dataset for trends and risk score calibration.
+9. Treat port data or CSV disruption feeds as optional future extensions unless the user explicitly asks for them.
 
 ## Phase 5: RAG Assistant
 
@@ -150,9 +151,11 @@ docs/
 
 Start with an explainable scoring model:
 
-* Weather severity: up to 40 points
-* Disruption frequency: up to 40 points
+* Weather severity: up to 30 points
+* News disruption frequency: up to 25 points
 * Negative sentiment: up to 20 points
+* Historical delay patterns: up to 15 points
+* Trade activity changes: up to 10 points
 
 Classify risk:
 
@@ -188,6 +191,9 @@ QDRANT_URL=
 QDRANT_API_KEY=
 NEWS_API_KEY=
 OPENWEATHER_API_KEY=
+UN_COMTRADE_API_KEY=
+KAGGLE_USERNAME=
+KAGGLE_KEY=
 PORT_DATA_API_KEY=
 ```
 
@@ -244,12 +250,45 @@ Fields:
 * `published_at`
 * `embedding_id`
 
+## trade_metrics
+
+Stores country-level import and export activity from UN Comtrade.
+
+Fields:
+
+* `id`
+* `country`
+* `partner_country`
+* `trade_flow`
+* `commodity`
+* `period`
+* `trade_value`
+* `quantity`
+* `created_at`
+
+## historical_shipments
+
+Stores selected historical rows from a Kaggle supply chain dataset.
+
+Fields:
+
+* `id`
+* `order_id`
+* `region`
+* `warehouse`
+* `delivery_status`
+* `delay_days`
+* `shipping_mode`
+* `created_at`
+
 Best practices:
 
 * Use stable IDs.
 * Deduplicate documents by URL when possible.
 * Store timestamps in UTC.
 * Keep raw external API payloads out of the main tables unless needed for debugging.
+* Treat Kaggle data as batch seed data, not an hourly live source.
+* Fetch UN Comtrade data less frequently than weather and news if API limits require it.
 
 ---
 

@@ -141,7 +141,9 @@ Weather alerts
 
 News articles
 
-Port disruption events or CSV disruption data
+Trade volume data
+
+Historical shipment and delivery data
 
 ---
 
@@ -215,16 +217,54 @@ Mobile application
 
 System shall ingest external data every hour.
 
-MVP sources:
+Recommended MVP sources:
 
-* NewsAPI
 * OpenWeather API
-* Port Data API or CSV disruption data
-
-Optional future sources:
-
+* NewsAPI
 * UN Comtrade API
-* Kaggle historical supply chain datasets
+* Kaggle supply chain dataset, such as Supply Chain Dataset or DataCo Supply Chain Dataset
+
+Source responsibilities:
+
+* OpenWeather API provides live weather risk signals.
+* NewsAPI provides live supply chain disruption articles for RAG.
+* UN Comtrade API provides import, export, and country trade activity for dashboard analytics.
+* Kaggle historical data provides shipment, delivery, delay, and warehouse records for trends and risk score calibration.
+
+NewsAPI search keywords:
+
+* supply chain disruption
+* shipping delays
+* port congestion
+* logistics crisis
+* container shortage
+* factory shutdown
+
+Example weather event:
+
+```json
+{
+  "region": "Germany",
+  "event": "Heavy Storm",
+  "severity": "High",
+  "timestamp": "2026-06-02"
+}
+```
+
+Example news document:
+
+```json
+{
+  "title": "Port congestion affects shipping routes",
+  "content": "Latest disruption details...",
+  "region": "Europe",
+  "source": "Reuters"
+}
+```
+
+Optional future source:
+
+* Port Data API or CSV disruption data
 
 ---
 
@@ -247,6 +287,8 @@ Inputs:
 * Weather severity
 * Disruption frequency
 * Negative sentiment
+* Historical delivery delay patterns
+* Trade activity changes
 
 Output:
 
@@ -494,6 +536,48 @@ url
 published_at
 
 embedding_id
+
+---
+
+## trade_metrics
+
+id
+
+country
+
+partner_country
+
+trade_flow
+
+commodity
+
+period
+
+trade_value
+
+quantity
+
+created_at
+
+---
+
+## historical_shipments
+
+id
+
+order_id
+
+region
+
+warehouse
+
+delivery_status
+
+delay_days
+
+shipping_mode
+
+created_at
 
 ---
 
