@@ -1,0 +1,324 @@
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #eef2f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: #1d4ed8;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #101827;
+  color: #f8fafc;
+  padding: 24px;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.brand span {
+  display: block;
+  color: #93a4bb;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+nav {
+  display: grid;
+  gap: 8px;
+}
+
+nav a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+nav a:hover {
+  background: #1f2a3d;
+}
+
+.content {
+  padding: 28px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.topbar p {
+  color: #64748b;
+  margin: 0 0 4px;
+}
+
+.topbar h1 {
+  font-size: 32px;
+  margin: 0;
+}
+
+.status,
+.notice {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.status {
+  color: #047857;
+}
+
+.loading {
+  color: #b45309;
+}
+
+.notice {
+  margin-bottom: 16px;
+  color: #92400e;
+  background: #fffbeb;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.metric,
+.panel {
+  background: #ffffff;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 6%);
+}
+
+.metric {
+  padding: 18px;
+}
+
+.metric-icon {
+  color: #2563eb;
+  margin-bottom: 16px;
+}
+
+.metric span,
+.metric p {
+  color: #64748b;
+}
+
+.metric strong {
+  display: block;
+  font-size: 34px;
+  margin: 8px 0 6px;
+}
+
+.metric p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.wide {
+  min-height: 330px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panel-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.panel-header span {
+  color: #64748b;
+}
+
+.chart {
+  height: 260px;
+}
+
+.map-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.region-tile,
+.feed-item {
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.region-tile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.region-tile strong,
+.region-tile span {
+  display: block;
+}
+
+.region-tile div span {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+.level {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.level-high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.level-medium {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.level-low {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.assistant-box {
+  display: grid;
+  gap: 10px;
+}
+
+.assistant-box textarea {
+  min-height: 92px;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.assistant-box button {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #1d4ed8;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.assistant-box button:disabled {
+  opacity: 0.65;
+}
+
+.answer {
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.answer h3 {
+  font-size: 14px;
+  margin: 16px 0 6px;
+}
+
+.answer ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.feed {
+  display: grid;
+  gap: 12px;
+}
+
+.feed-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+}
+
+.feed-item strong {
+  display: block;
+}
+
+.feed-item p {
+  color: #475569;
+  margin: 5px 0;
+}
+
+.feed-item small {
+  color: #64748b;
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .metric-grid,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
