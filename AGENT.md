@@ -33,17 +33,17 @@ Use this stack:
 
 Frontend:
 
-* Next.js 15
+* React
 * TypeScript
 * TailwindCSS
-* shadcn/ui
+* shadcn/ui or equivalent component system
 * Recharts
-* Map visualization
+* Leaflet or React Map GL
 
 Backend:
 
-* Next.js Route Handlers
-* Server Actions where useful
+* FastAPI
+* Python service modules
 * LangGraph for agent workflows
 * OpenAI API for chat, summarization, embeddings, and sentiment support
 
@@ -54,9 +54,9 @@ Data:
 
 Deployment:
 
-* Vercel
-* Vercel Cron Jobs
-* GitHub + Vercel CI/CD
+* Docker
+* Separate `frontend`, `backend`, and `ingestion` services
+* GitHub for source control and CI/CD foundation
 
 ---
 
@@ -66,34 +66,37 @@ Follow this implementation order unless the user asks otherwise.
 
 ## Phase 1: Project Setup
 
-1. Convert the current skeleton into a Next.js 15 TypeScript app.
-2. Add TailwindCSS and shadcn/ui.
-3. Create a clean folder structure.
-4. Add environment variable examples.
-5. Add basic linting and formatting.
+1. Create a Dockerized project structure with `frontend/`, `backend/`, and `ingestion/`.
+2. Create the React TypeScript frontend.
+3. Create the FastAPI backend.
+4. Add TailwindCSS and shadcn/ui or an equivalent component system.
+5. Add environment variable examples.
+6. Add basic linting, formatting, and test setup.
 
 Recommended structure:
 
 ```text
-app/
-  page.tsx
-  dashboard/
-  assistant/
-  feed/
-  api/
-components/
-  ui/
-  dashboard/
-  assistant/
-lib/
-  supabase/
-  qdrant/
-  openai/
-  ingestion/
-  risk/
-  rag/
-  agent/
-types/
+frontend/
+  src/
+    pages/
+    components/
+    lib/
+    types/
+backend/
+  app/
+    api/
+    services/
+    agent/
+    rag/
+    risk/
+    integrations/
+    schemas/
+ingestion/
+  app/
+    jobs/
+    sources/
+    normalizers/
+docker-compose.yml
 docs/
 ```
 
@@ -105,7 +108,7 @@ docs/
    * `documents`
 2. Add Supabase client helpers.
 3. Keep server-only keys on the server.
-4. Build read routes for:
+4. Build FastAPI read endpoints for:
    * regions
    * risk scores
    * recent disruptions
@@ -119,22 +122,23 @@ docs/
    * High Risk Regions
    * Recent Disruptions
    * Risk Trend Chart
-3. Replace mock data with Supabase data.
+3. Replace mock data with FastAPI data backed by Supabase.
 4. Add loading, empty, and error states.
 
 ## Phase 4: Ingestion Pipeline
 
-1. Create one ingestion route.
-2. Start with News API.
+1. Create one ingestion job.
+2. Start with NewsAPI.
 3. Normalize external data into a consistent internal shape.
 4. Store event metadata in Supabase.
 5. Generate embeddings and store vectors in Qdrant.
 6. Add OpenWeather after the news ingestion works.
-7. Add optional logistics feed only after the core flow is stable.
+7. Add port data or CSV disruption data after the core flow is stable.
+8. Treat UN Comtrade and Kaggle datasets as optional future extensions unless the user explicitly asks for them.
 
 ## Phase 5: RAG Assistant
 
-1. Create a chat API route.
+1. Create a FastAPI chat endpoint.
 2. Embed the user query.
 3. Search Qdrant for related documents.
 4. Load related risk scores and disruptions from Supabase.
@@ -160,11 +164,12 @@ Store both the numeric score and classification in Supabase.
 
 ## Phase 7: Deployment
 
-1. Add production environment variables in Vercel.
-2. Deploy the Next.js app to Vercel.
-3. Configure Vercel Cron for hourly ingestion.
-4. Verify the dashboard loads under 3 seconds.
-5. Verify chat responses complete under 8 seconds where possible.
+1. Add Dockerfiles for frontend, backend, and ingestion.
+2. Add `docker-compose.yml` for local development.
+3. Add production environment variables in the chosen deployment platform.
+4. Configure the ingestion scheduler to run hourly.
+5. Verify the dashboard loads under 3 seconds.
+6. Verify chat responses complete under 8 seconds where possible.
 
 ---
 
@@ -183,6 +188,7 @@ QDRANT_URL=
 QDRANT_API_KEY=
 NEWS_API_KEY=
 OPENWEATHER_API_KEY=
+PORT_DATA_API_KEY=
 ```
 
 Rules:
@@ -338,21 +344,22 @@ Recommended pages:
 
 Rules:
 
-* Keep API routes small.
-* Put shared logic in `lib/`.
+* Keep API routers small.
+* Put shared backend logic in `backend/app/services/`.
 * Validate request payloads.
 * Return consistent error shapes.
 * Use server-side clients for OpenAI, Supabase service role, and Qdrant.
 * Avoid mixing UI code with ingestion, RAG, or risk scoring logic.
 
-Recommended API routes:
+Recommended FastAPI endpoints:
 
 ```text
-app/api/regions/route.ts
-app/api/disruptions/route.ts
-app/api/assistant/route.ts
-app/api/ingest/route.ts
-app/api/risk/recalculate/route.ts
+GET /health
+GET /regions
+GET /disruptions
+POST /assistant/chat
+POST /ingest/run
+POST /risk/recalculate
 ```
 
 ---
@@ -384,7 +391,7 @@ Use graceful degradation.
 
 Examples:
 
-* If News API fails, still process weather data.
+* If NewsAPI fails, still process weather data.
 * If OpenWeather fails, keep previous weather-derived scores.
 * If Qdrant search fails, answer from Supabase data if possible.
 * If OpenAI fails, show a clear assistant error instead of an empty response.

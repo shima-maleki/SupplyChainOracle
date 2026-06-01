@@ -17,24 +17,27 @@ The platform collects external supply chain risk signals, stores structured risk
 ```mermaid
 flowchart LR
     User[Supply Chain Manager or Analyst]
-    Frontend[Next.js Dashboard]
-    API[Next.js Route Handlers]
+    Frontend[React Frontend]
+    API[FastAPI Backend]
     Agent[LangGraph Risk Agent]
+    RiskEngine[Risk Engine]
+    Ingestion[Ingestion Scheduler]
     OpenAI[OpenAI Models]
     Supabase[(Supabase Datastore)]
     Qdrant[(Qdrant Vector DB)]
     External[External Data Sources]
-    Cron[Vercel Cron Jobs]
 
     User --> Frontend
     Frontend --> API
     API --> Agent
+    API --> RiskEngine
     Agent --> OpenAI
     Agent --> Supabase
     Agent --> Qdrant
+    RiskEngine --> Supabase
 
-    Cron --> External
-    Cron --> API
+    Ingestion --> External
+    Ingestion --> API
     API --> Supabase
     API --> Qdrant
 ```
@@ -50,7 +53,7 @@ Frontend:
 
 Backend:
 
-* Provides API endpoints
+* Provides FastAPI endpoints
 * Runs ingestion jobs
 * Calculates risk scores
 * Handles chat requests
@@ -79,17 +82,17 @@ OpenAI:
 
 ## Frontend
 
-* Next.js 15
+* React
 * TypeScript
 * TailwindCSS
-* shadcn/ui
+* shadcn/ui or equivalent component system
 * Recharts
-* Map visualization
+* Leaflet or React Map GL
 
 ## Backend
 
-* Next.js Route Handlers
-* Server Actions
+* FastAPI
+* Python service modules
 * LangGraph
 * OpenAI API
 
@@ -100,9 +103,9 @@ OpenAI:
 
 ## Deployment
 
-* Vercel for hosting
-* Vercel Cron Jobs for hourly ingestion
-* GitHub + Vercel for CI/CD
+* Docker for local services and deployment packaging
+* Separate containers for frontend, backend, and ingestion
+* GitHub for source control and CI/CD foundation
 
 ---
 
@@ -110,30 +113,35 @@ OpenAI:
 
 The system ingests data every hour from external sources.
 
-Sources:
+MVP sources:
 
-* News API
+* NewsAPI
 * OpenWeather API
-* Optional logistics feed
+* Port Data API or CSV disruption data
+
+Optional future sources:
+
+* UN Comtrade API for trade trend charts
+* Kaggle historical datasets for offline analysis or future prediction work
 
 ```mermaid
 flowchart TD
-    Cron[Vercel Cron Job Every Hour]
+    Scheduler[Ingestion Scheduler Every Hour]
     FetchNews[Fetch News Articles]
     FetchWeather[Fetch Weather Alerts]
-    FetchLogistics[Fetch Logistics Events]
+    FetchPorts[Fetch Port or CSV Events]
     Normalize[Clean and Normalize Data]
     StoreEvents[Store Events in Supabase]
     Embed[Generate Embeddings]
     StoreVectors[Store Vectors in Qdrant]
     Score[Update Regional Risk Scores]
 
-    Cron --> FetchNews
-    Cron --> FetchWeather
-    Cron --> FetchLogistics
+    Scheduler --> FetchNews
+    Scheduler --> FetchWeather
+    Scheduler --> FetchPorts
     FetchNews --> Normalize
     FetchWeather --> Normalize
-    FetchLogistics --> Normalize
+    FetchPorts --> Normalize
     Normalize --> StoreEvents
     Normalize --> Embed
     Embed --> StoreVectors
@@ -143,7 +151,7 @@ flowchart TD
 
 ## Ingestion Steps
 
-1. Vercel Cron starts the ingestion job.
+1. The ingestion scheduler starts the hourly job.
 2. The backend fetches data from external APIs.
 3. Raw data is cleaned and converted into a common format.
 4. Important event details are saved in Supabase.
@@ -163,7 +171,7 @@ The assistant does not answer only from the language model's memory. It first re
 sequenceDiagram
     participant User
     participant UI as Chat UI
-    participant API as Chat Route Handler
+    participant API as FastAPI Chat Endpoint
     participant Agent as LangGraph Agent
     participant Qdrant as Qdrant Vector DB
     participant DB as Supabase
@@ -216,6 +224,7 @@ flowchart TD
     Decide[Decide Required Tools]
     NewsTool[News Retrieval Tool]
     WeatherTool[Weather Tool]
+    PortTool[Port Disruption Tool]
     RiskTool[Risk Score Lookup Tool]
     QdrantTool[Qdrant Search Tool]
     Context[Combined Context]
@@ -225,10 +234,12 @@ flowchart TD
     Agent --> Decide
     Decide --> NewsTool
     Decide --> WeatherTool
+    Decide --> PortTool
     Decide --> RiskTool
     Decide --> QdrantTool
     NewsTool --> Context
     WeatherTool --> Context
+    PortTool --> Context
     RiskTool --> Context
     QdrantTool --> Context
     Context --> Answer
@@ -243,6 +254,10 @@ News Retrieval Tool:
 Weather Tool:
 
 * Retrieves weather alerts and severe weather information
+
+Port Disruption Tool:
+
+* Retrieves port congestion, shipping delay, or CSV disruption records
 
 Risk Score Lookup Tool:
 
@@ -371,12 +386,12 @@ The dashboard reads structured data from Supabase and sends chat questions to th
 
 ```mermaid
 flowchart TD
-    Dashboard[Next.js Dashboard]
+    Dashboard[React Dashboard]
     Overview[Executive Dashboard]
     Explorer[Regional Risk Explorer]
     Chat[AI Assistant Page]
     Feed[Disruption Feed]
-    API[Route Handlers and Server Actions]
+    API[FastAPI Endpoints]
     DB[(Supabase)]
     Agent[LangGraph Agent]
 
@@ -423,35 +438,35 @@ Disruption Feed:
 
 ---
 
-# 10. Deployment Architecture
+# 10. Docker Architecture
 
-The MVP is deployed fully on Vercel, with managed databases for structured data and vectors.
+The MVP uses Docker so recruiters can see a realistic multi-service architecture.
 
 ```mermaid
 flowchart LR
     GitHub[GitHub Repository]
-    Vercel[Vercel Deployment]
-    App[Next.js App]
-    Cron[Vercel Cron Jobs]
+    FrontendContainer[frontend Container: React]
+    BackendContainer[backend Container: FastAPI + LangGraph]
+    IngestionContainer[ingestion Container: Scheduler]
     Supabase[(Supabase Datastore)]
     Qdrant[(Qdrant Cloud)]
     OpenAI[OpenAI API]
     APIs[External APIs]
 
-    GitHub --> Vercel
-    Vercel --> App
-    Vercel --> Cron
-    App --> Supabase
-    App --> Qdrant
-    App --> OpenAI
-    Cron --> APIs
-    Cron --> Supabase
-    Cron --> Qdrant
+    GitHub --> FrontendContainer
+    GitHub --> BackendContainer
+    GitHub --> IngestionContainer
+    FrontendContainer --> BackendContainer
+    BackendContainer --> Supabase
+    BackendContainer --> Qdrant
+    BackendContainer --> OpenAI
+    IngestionContainer --> APIs
+    IngestionContainer --> BackendContainer
 ```
 
 ## Environment Variables
 
-The following values should be stored securely in Vercel:
+The following values should be stored securely in local `.env` files for development and production secrets in deployment:
 
 * `OPENAI_API_KEY`
 * `SUPABASE_URL`
@@ -461,6 +476,7 @@ The following values should be stored securely in Vercel:
 * `QDRANT_API_KEY`
 * `NEWS_API_KEY`
 * `OPENWEATHER_API_KEY`
+* `PORT_DATA_API_KEY`
 
 ---
 
@@ -497,7 +513,7 @@ flowchart TD
 
 For the MVP:
 
-* Store API keys only in Vercel environment variables.
+* Store API keys only in environment variables.
 * Do not store sensitive business data.
 * Validate user input before sending it to backend services.
 * Do not expose server-side datastore credentials to the browser.
@@ -509,15 +525,17 @@ For the MVP:
 
 Recommended build order:
 
-1. Create the datastore schema in Supabase.
-2. Build simple API routes for regions and disruptions.
-3. Build the dashboard pages with mock data.
-4. Add hourly ingestion for one source, such as News API.
-5. Store documents and disruption events.
-6. Generate embeddings and store them in Qdrant.
-7. Add RAG search for the assistant.
-8. Add risk scoring.
-9. Connect live dashboard data.
-10. Add error handling, citations, and monitoring.
+1. Create the Docker folder structure: `frontend/`, `backend/`, and `ingestion/`.
+2. Build the React dashboard with mock data.
+3. Create the FastAPI backend with health, regions, disruptions, and assistant endpoints.
+4. Create the datastore schema in Supabase.
+5. Connect dashboard reads to FastAPI and Supabase.
+6. Add hourly ingestion for one source, such as NewsAPI.
+7. Store documents and disruption events.
+8. Generate embeddings and store them in Qdrant.
+9. Add RAG search for the assistant.
+10. Add risk scoring.
+11. Add OpenWeather and port or CSV disruption data.
+12. Add error handling, citations, and monitoring.
 
 This order keeps the project simple while still moving toward the complete MVP.

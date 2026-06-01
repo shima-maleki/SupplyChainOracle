@@ -58,7 +58,7 @@ Organizations require a centralized platform capable of continuously monitoring 
 * Implement retrieval-augmented generation (RAG)
 * Integrate multiple external data sources
 * Provide explainable risk scoring
-* Deploy fully on Vercel
+* Build a Dockerized React + FastAPI application
 
 ---
 
@@ -141,7 +141,7 @@ Weather alerts
 
 News articles
 
-Port disruption events
+Port disruption events or CSV disruption data
 
 ---
 
@@ -195,7 +195,7 @@ Chat assistant
 
 ## Excluded (Future Versions)
 
-Supplier integration
+Direct supplier system integration
 
 ERP integration
 
@@ -215,11 +215,16 @@ Mobile application
 
 System shall ingest external data every hour.
 
-Sources:
+MVP sources:
 
-* News API
+* NewsAPI
 * OpenWeather API
-* Optional logistics feed
+* Port Data API or CSV disruption data
+
+Optional future sources:
+
+* UN Comtrade API
+* Kaggle historical supply chain datasets
 
 ---
 
@@ -321,7 +326,7 @@ Concurrent users
 
 ## Security
 
-Environment variables secured via Vercel.
+Environment variables secured through local `.env` files for development and deployment platform secrets in production.
 
 No sensitive business data stored.
 
@@ -331,29 +336,29 @@ No sensitive business data stored.
 
 ## Frontend
 
-Next.js 15
+React
 
 TypeScript
 
 TailwindCSS
 
-shadcn/ui
+shadcn/ui or equivalent component system
 
 Recharts
 
-Map visualization
+Leaflet or React Map GL
 
 ---
 
 ## Backend
 
-Next.js Route Handlers
+FastAPI
 
 LangGraph
 
 OpenAI
 
-Server Actions
+Python service modules
 
 ---
 
@@ -383,12 +388,13 @@ Stores:
 
 ## Scheduled Jobs
 
-Vercel Cron Jobs
+Dockerized ingestion service
 
 Tasks:
 
 * Fetch news
 * Fetch weather
+* Fetch port or CSV disruption data
 * Generate risk scores
 
 Frequency:
@@ -408,6 +414,8 @@ Supply Chain Risk Agent
 News Retrieval Tool
 
 Weather Tool
+
+Port Disruption Tool
 
 Risk Score Lookup Tool
 
@@ -566,11 +574,11 @@ API uptime
 
 # 14. Deployment
 
-Hosting: Vercel
+Hosting: Dockerized deployment target
 
-Frontend: Next.js
+Frontend: React
 
-Backend: Next.js API Routes
+Backend: FastAPI
 
 Database: Supabase datastore
 
@@ -578,6 +586,6 @@ Vector Database: Qdrant Cloud
 
 AI Model: OpenAI GPT-5
 
-Monitoring: Vercel Analytics
+Containers: Docker
 
-CI/CD: GitHub + Vercel
+CI/CD: GitHub
