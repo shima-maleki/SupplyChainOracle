@@ -24,12 +24,6 @@
 
 This project is built as a practical portfolio application for AI engineering and React product development. It demonstrates how I approach production-style AI systems: grounded retrieval, explainable scoring, live data ingestion, resilient fallbacks, and a dashboard that makes model output auditable instead of opaque.
 
-## 🌟 Why This Project Matters
-
-Supply chain teams often monitor risk through fragmented tools: weather sites, news feeds, port reports, trade data, shipment spreadsheets, and manual analyst notes. That creates slow reaction times and inconsistent visibility.
-
-SupplyChainOracle centralizes these signals into one operational dashboard and an AI assistant that answers questions with citations and live risk context.
-
 ## ✅ Highlights
 
 - ✅ Retrieval-Augmented Generation (RAG) using OpenAI + Qdrant
@@ -55,33 +49,6 @@ SupplyChainOracle centralizes these signals into one operational dashboard and a
 <p align="center">
   <img src="static/app_desktop_chatbot.png" width="95%" />
 </p>
-
-## 🧠 Skills Demonstrated
-
-**AI engineering:**
-
-* Retrieval-augmented generation using OpenAI embeddings and Qdrant
-* Grounded OpenAI assistant responses with structured JSON output
-* Explainable risk scoring from live and historical signals
-* Live ingestion from OpenWeather, NewsAPI, and UN Comtrade
-* Supabase-backed persistence with mock-safe fallback behavior
-* API-first backend design using FastAPI and Pydantic
-
-**React and frontend engineering:**
-
-* React + TypeScript dashboard architecture
-* Recharts visualizations for regional risk
-* Operational UI for risk scores, disruption feeds, assistant responses, and live system status
-* Resilient frontend fallback data when the backend is unavailable
-* Responsive dashboard layout with clear loading and error states
-
-**Engineering approach:**
-
-* Start with a working mock-safe MVP
-* Replace mock boundaries with real integrations incrementally
-* Keep model output grounded in retrieved data
-* Make risk scores explainable and testable
-* Preserve deterministic fallback paths for demos and local development
 
 ## 🎯 Problem Statement
 
@@ -110,6 +77,33 @@ SupplyChainOracle solves this by combining live data ingestion, explainable scor
 7. Answers natural-language questions using retrieved documents and current risk scores.
 
 The assistant is designed to be grounded: it uses supplied risk scores, recent disruptions, and retrieved documents, then returns citations alongside the answer.
+
+## 🧠 Skills Demonstrated
+
+**AI engineering:**
+
+* Retrieval-augmented generation using OpenAI embeddings and Qdrant
+* Grounded OpenAI assistant responses with structured JSON output
+* Explainable risk scoring from live and historical signals
+* Live ingestion from OpenWeather, NewsAPI, and UN Comtrade
+* Supabase-backed persistence with mock-safe fallback behavior
+* API-first backend design using FastAPI and Pydantic
+
+**React and frontend engineering:**
+
+* React + TypeScript dashboard architecture
+* Recharts visualizations for regional risk
+* Operational UI for risk scores, disruption feeds, assistant responses, and live system status
+* Resilient frontend fallback data when the backend is unavailable
+* Responsive dashboard layout with clear loading and error states
+
+**Engineering approach:**
+
+* Start with a working mock-safe MVP
+* Replace mock boundaries with real integrations incrementally
+* Keep model output grounded in retrieved data
+* Make risk scores explainable and testable
+* Preserve deterministic fallback paths for demos and local development
 
 ## 🏗 What This Demonstrates
 
