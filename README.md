@@ -1,60 +1,161 @@
 # SupplyChainOracle
 
-AI Supply Chain Risk Assistant for monitoring weather, news, trade, and historical delivery signals.
+SupplyChainOracle is an AI-powered supply chain risk assistant that monitors weather, news, trade activity, and historical delivery signals to help teams understand regional disruption risk.
 
-The MVP is intentionally practical for a Junior AI Engineer portfolio: React dashboard, FastAPI backend, live ingestion, Supabase persistence, Qdrant-backed RAG, OpenAI grounded assistant responses, explainable risk scoring, and Dockerized ingestion.
+This project is built as a practical portfolio application for AI engineering and React product development. It demonstrates how I approach production-style AI systems: grounded retrieval, explainable scoring, live data ingestion, resilient fallbacks, and a dashboard that makes model output auditable instead of opaque.
 
-## Stack
+## Why This Project Matters
+
+Supply chain teams often monitor risk through fragmented tools: weather sites, news feeds, port reports, trade data, shipment spreadsheets, and manual analyst notes. That creates slow reaction times and inconsistent visibility.
+
+SupplyChainOracle centralizes these signals into one operational dashboard and an AI assistant that answers questions with citations and live risk context.
+
+## Skills Demonstrated
+
+AI engineering:
+
+* Retrieval-augmented generation using OpenAI embeddings and Qdrant
+* Grounded OpenAI assistant responses with structured JSON output
+* Explainable risk scoring from live and historical signals
+* Live ingestion from OpenWeather, NewsAPI, and UN Comtrade
+* Supabase-backed persistence with mock-safe fallback behavior
+* API-first backend design using FastAPI and Pydantic
+
+React and frontend engineering:
+
+* React + TypeScript dashboard architecture
+* Recharts visualizations for regional risk
+* Operational UI for risk scores, disruption feeds, assistant responses, and live system status
+* Resilient frontend fallback data when the backend is unavailable
+* Responsive dashboard layout with clear loading and error states
+
+Engineering approach:
+
+* Start with a working mock-safe MVP
+* Replace mock boundaries with real integrations incrementally
+* Keep model output grounded in retrieved data
+* Make risk scores explainable and testable
+* Preserve deterministic fallback paths for demos and local development
+
+## Problem Statement
+
+Supply chain managers and operations analysts need to detect risk early, but important signals are distributed across unrelated sources:
+
+* Weather alerts
+* Global logistics and disruption news
+* Country-level import/export activity
+* Historical delivery delays
+* Regional transportation disruptions
+
+Without a centralized view, teams spend time manually collecting information instead of evaluating impact. This can lead to delayed responses, higher costs, inventory issues, missed stakeholder updates, and poor visibility into regional risk.
+
+## Solution
+
+SupplyChainOracle solves this by combining live data ingestion, explainable scoring, vector search, and an AI assistant.
+
+The system:
+
+1. Ingests live signals from OpenWeather, NewsAPI, and UN Comtrade.
+2. Stores structured risk data in Supabase.
+3. Embeds disruption/news documents with OpenAI embeddings.
+4. Indexes documents in Qdrant for semantic retrieval.
+5. Calculates regional risk scores from weather, news frequency, negative terms, shipment delays, and trade activity.
+6. Serves a React dashboard with risk metrics, regional charts, live system status, and a disruption feed.
+7. Answers natural-language questions using retrieved documents and current risk scores.
+
+The assistant is designed to be grounded: it uses supplied risk scores, recent disruptions, and retrieved documents, then returns citations alongside the answer.
+
+## High-Level Architecture
+
+```mermaid
+flowchart LR
+    User[Supply Chain Manager or Analyst]
+    Frontend[React + TypeScript Dashboard]
+    Backend[FastAPI Backend]
+    Ingestion[Dockerized Ingestion Scheduler]
+    RiskEngine[Explainable Risk Scoring]
+    Assistant[OpenAI Grounded Assistant]
+    Retriever[RAG Retriever]
+    Supabase[(Supabase Structured Data)]
+    Qdrant[(Qdrant Vector Store)]
+    OpenAI[OpenAI Chat + Embeddings]
+    Weather[OpenWeather API]
+    News[NewsAPI]
+    Trade[UN Comtrade API]
+
+    User --> Frontend
+    Frontend --> Backend
+    Backend --> RiskEngine
+    Backend --> Assistant
+    Assistant --> Retriever
+    Retriever --> Qdrant
+    Assistant --> OpenAI
+    Backend --> Supabase
+    RiskEngine --> Supabase
+    Ingestion --> Backend
+    Ingestion --> Weather
+    Ingestion --> News
+    Ingestion --> Trade
+    Backend --> OpenAI
+    Backend --> Qdrant
+    Backend --> Supabase
+```
+
+## Tech Stack
 
 Frontend:
 
 * React
 * TypeScript
 * Recharts
-* Tailwind-ready CSS structure
+* Lucide icons
+* Vite
 
 Backend:
 
 * FastAPI
-* Python service modules
-* Risk scoring engine
-* OpenAI-backed assistant service with deterministic fallback
+* Pydantic
+* httpx
+* OpenAI API
+* Explainable Python risk engine
 
-Data:
+Data and AI infrastructure:
 
-* Supabase datastore schema in `supabase/schema.sql`
-* Supabase REST persistence for regions, disruptions, documents, trade metrics, and historical shipments
-* Qdrant vector retrieval using OpenAI embeddings
-* Mock fallback data for local development without secrets
+* Supabase for structured data
+* Qdrant for vector search
+* OpenAI embeddings for document indexing
+* OpenAI chat model for grounded assistant responses
 
-Ingestion:
+Ingestion and deployment:
 
-* Dockerized scheduler service
-* Live OpenWeather, NewsAPI, and UN Comtrade fetchers
-* Seeded historical shipment fallback data
+* Docker Compose
+* Dockerized backend, frontend, and ingestion worker
+* GitHub Actions CI
 
-## Project Structure
+## Key Features
 
-```text
-frontend/          React dashboard and assistant UI
-backend/           FastAPI API, risk scoring, RAG, agent services
-ingestion/         Scheduler service for hourly ingestion
-supabase/          Supabase schema
-docs/              PRD and architecture documentation
-AGENT.md           Build instructions and engineering rules
-```
+* Live disruption ingestion from OpenWeather
+* Live supply chain news ingestion from NewsAPI
+* Live trade metrics from UN Comtrade
+* Supabase persistence for regions, documents, disruptions, trade metrics, and shipments
+* Qdrant-backed semantic retrieval
+* OpenAI assistant with structured output and citations
+* Explainable regional risk score recalculation
+* Dashboard live systems panel
+* Mock-safe local fallback for demos without credentials
+* CI workflow for backend tests and frontend builds
 
-## Environment Setup
+## How To Run It
 
-Create a local `.env` from the example:
+### 1. Clone And Configure
 
 ```bash
+git clone https://github.com/shima-maleki/SupplyChainOracle.git
+cd SupplyChainOracle
 cp .env.example .env
 ```
 
-The app runs with mock data when external API keys are empty. With the full `.env`, it uses live ingestion, Supabase, OpenAI, and Qdrant.
-
-Required for the live demo:
+Fill in the live service values in `.env`:
 
 ```text
 OPENAI_API_KEY=
@@ -76,9 +177,19 @@ QDRANT_COLLECTION=supply_chain_documents
 INGEST_INTERVAL_SECONDS=3600
 ```
 
-For first-time Supabase setup, run `supabase/schema.sql` in the Supabase SQL editor or apply it using `SUPABASE_DB_URL`.
+### 2. Prepare Supabase
 
-## Run With Docker
+Run the SQL in `supabase/schema.sql` in the Supabase SQL editor.
+
+Expected tables:
+
+* `regions`
+* `disruptions`
+* `documents`
+* `trade_metrics`
+* `historical_shipments`
+
+### 3. Run With Docker
 
 ```bash
 docker compose up --build
@@ -90,29 +201,22 @@ Services:
 * Backend API: `http://localhost:8000`
 * API docs: `http://localhost:8000/docs`
 
-The ingestion container calls `POST /ingest/run` every hour. To trigger ingestion manually:
+Trigger ingestion manually:
 
 ```bash
 curl -X POST http://localhost:8000/ingest/run
 ```
 
-## Run Backend Locally
+### 4. Run Locally Without Docker
+
+Backend:
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 uvicorn backend.app.main:app --reload
 ```
 
-From the repository root, use:
-
-```bash
-uvicorn backend.app.main:app --reload
-```
-
-## Run Frontend Locally
+Frontend:
 
 ```bash
 cd frontend
@@ -135,24 +239,71 @@ POST /assistant/chat
 POST /ingest/run
 ```
 
-## MVP Data Sources
+## Success Metrics
 
-* OpenWeather API for weather risk signals
-* NewsAPI for RAG knowledge base articles
-* UN Comtrade API for import and export analytics
-* Kaggle supply chain data for historical shipment trends
+Product success:
 
-## Demo Checklist
+* A manager can identify the highest-risk region in under 30 seconds.
+* The assistant returns cited, grounded answers for supply chain risk questions.
+* The dashboard shows live system connectivity and data freshness signals.
+* Risk scores update after ingestion without manual database edits.
 
-1. Confirm `.env` has Supabase, OpenAI, Qdrant, NewsAPI, OpenWeather, and UN Comtrade values.
-2. Run `docker compose up --build`.
-3. Open `http://localhost:5173`.
-4. Confirm the Live Systems panel shows connected services.
-5. Run `POST /ingest/run` from API docs or curl.
-6. Confirm `/dashboard` shows updated disruption counts, trade metrics, and recalculated risk scores.
-7. Ask the assistant: `What risks are affecting Europe today?`
-8. Confirm the assistant returns grounded citations from retrieved documents.
+Technical success:
 
-## Notes
+* Backend tests pass in CI.
+* Frontend production build passes in CI.
+* Ingestion writes live records to Supabase.
+* Documents are embedded and indexed in Qdrant.
+* Assistant responses continue to work if OpenAI or Qdrant is unavailable by falling back safely.
 
-The current implementation is a working live-data MVP with mock-safe fallback. The next engineering step is adding deployment-specific infrastructure such as managed hosting, CI checks, scheduled ingestion, and observability.
+Portfolio success:
+
+* Demonstrates full-stack AI application development.
+* Shows practical RAG, not just prompt-only AI.
+* Shows React dashboard implementation for an operational workflow.
+* Shows explainable scoring and integration with real-world APIs.
+
+## Data Notes
+
+This application uses a mix of live data and fallback seed data.
+
+Live data sources:
+
+* OpenWeather API for weather conditions and disruption signals
+* NewsAPI for supply chain and logistics articles
+* UN Comtrade API for import/export trade metrics
+
+Seed/fallback data:
+
+* Historical shipment examples are seeded to support local development.
+* Mock disruptions/documents remain available when live services are not configured.
+
+Important data considerations:
+
+* NewsAPI results can include broad business or logistics-related articles; the assistant is instructed to answer only from retrieved context.
+* UN Comtrade values depend on API availability, selected reporting period, and rate limits.
+* OpenWeather current-weather signals are treated as operational risk indicators, not official logistics disruption alerts.
+* Risk scores are explainable MVP heuristics, not a production forecasting model.
+* Secrets must stay server-side. Do not expose OpenAI, Qdrant, or Supabase service-role keys to the browser.
+
+## Project Structure
+
+```text
+frontend/          React dashboard and assistant UI
+backend/           FastAPI API, risk scoring, RAG, agent services
+ingestion/         Scheduler service for hourly ingestion
+supabase/          Supabase schema
+docs/              PRD, architecture, and deployment checklist
+.github/           CI workflow
+```
+
+## Contact
+
+Shima Maleki
+
+* GitHub: `shima-maleki`
+* Email: `shimamaleki95@yahoo.com`
+
+## License
+
+This project is licensed under the MIT License.
