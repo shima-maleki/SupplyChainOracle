@@ -2,7 +2,7 @@
 
 AI Supply Chain Risk Assistant for monitoring weather, news, trade, and historical delivery signals.
 
-The MVP is intentionally practical for a Junior AI Engineer portfolio: React dashboard, FastAPI backend, LangGraph-ready assistant structure, Qdrant-ready RAG layer, Supabase schema, and Dockerized ingestion.
+The MVP is intentionally practical for a Junior AI Engineer portfolio: React dashboard, FastAPI backend, live ingestion, Supabase persistence, Qdrant-backed RAG, OpenAI grounded assistant responses, explainable risk scoring, and Dockerized ingestion.
 
 ## Stack
 
@@ -18,18 +18,20 @@ Backend:
 * FastAPI
 * Python service modules
 * Risk scoring engine
-* RAG-ready retriever and assistant service
+* OpenAI-backed assistant service with deterministic fallback
 
 Data:
 
 * Supabase datastore schema in `supabase/schema.sql`
-* Qdrant-ready document metadata and retrieval layer
+* Supabase REST persistence for regions, disruptions, documents, trade metrics, and historical shipments
+* Qdrant vector retrieval using OpenAI embeddings
 * Mock fallback data for local development without secrets
 
 Ingestion:
 
 * Dockerized scheduler service
-* OpenWeather, NewsAPI, UN Comtrade, and Kaggle source placeholders
+* Live OpenWeather, NewsAPI, and UN Comtrade fetchers
+* Seeded historical shipment fallback data
 
 ## Project Structure
 
@@ -50,7 +52,31 @@ Create a local `.env` from the example:
 cp .env.example .env
 ```
 
-The app runs with mock data even when external API keys are empty.
+The app runs with mock data when external API keys are empty. With the full `.env`, it uses live ingestion, Supabase, OpenAI, and Qdrant.
+
+Required for the live demo:
+
+```text
+OPENAI_API_KEY=
+SUPABASE_URL=https://PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=
+QDRANT_URL=
+QDRANT_API_KEY=
+NEWS_API_KEY=
+OPENWEATHER_API_KEY=
+UN_COMTRADE_API_KEY=
+```
+
+Optional defaults:
+
+```text
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+QDRANT_COLLECTION=supply_chain_documents
+INGEST_INTERVAL_SECONDS=3600
+```
+
+For first-time Supabase setup, run `supabase/schema.sql` in the Supabase SQL editor or apply it using `SUPABASE_DB_URL`.
 
 ## Run With Docker
 
@@ -63,6 +89,12 @@ Services:
 * Frontend: `http://localhost:5173`
 * Backend API: `http://localhost:8000`
 * API docs: `http://localhost:8000/docs`
+
+The ingestion container calls `POST /ingest/run` every hour. To trigger ingestion manually:
+
+```bash
+curl -X POST http://localhost:8000/ingest/run
+```
 
 ## Run Backend Locally
 
@@ -96,6 +128,7 @@ GET  /dashboard
 GET  /regions
 GET  /disruptions
 GET  /documents
+GET  /system/status
 GET  /risk/scores
 POST /risk/recalculate
 POST /assistant/chat
@@ -109,6 +142,17 @@ POST /ingest/run
 * UN Comtrade API for import and export analytics
 * Kaggle supply chain data for historical shipment trends
 
+## Demo Checklist
+
+1. Confirm `.env` has Supabase, OpenAI, Qdrant, NewsAPI, OpenWeather, and UN Comtrade values.
+2. Run `docker compose up --build`.
+3. Open `http://localhost:5173`.
+4. Confirm the Live Systems panel shows connected services.
+5. Run `POST /ingest/run` from API docs or curl.
+6. Confirm `/dashboard` shows updated disruption counts, trade metrics, and recalculated risk scores.
+7. Ask the assistant: `What risks are affecting Europe today?`
+8. Confirm the assistant returns grounded citations from retrieved documents.
+
 ## Notes
 
-The current implementation is a working scaffold with mock-safe data. The next engineering step is replacing repository methods in `backend/app/services/datastore.py` and retrieval logic in `backend/app/rag/retriever.py` with Supabase and Qdrant clients.
+The current implementation is a working live-data MVP with mock-safe fallback. The next engineering step is adding deployment-specific infrastructure such as managed hosting, CI checks, scheduled ingestion, and observability.
