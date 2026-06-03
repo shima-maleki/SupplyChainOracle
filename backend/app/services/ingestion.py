@@ -3,6 +3,7 @@ import httpx
 from backend.app.integrations.comtrade import COMTRADE_PERIOD, COMTRADE_TRADE_LANES, fetch_trade_metrics
 from backend.app.integrations.newsapi import NEWS_KEYWORDS, fetch_news_documents
 from backend.app.integrations.openweather import WEATHER_REGIONS, fetch_weather_disruptions
+from backend.app.rag.vector_store import index_documents
 from backend.app.services.datastore import datastore
 from backend.app.services.risk_recalculation import recalculate_live_risk_scores
 
@@ -19,6 +20,7 @@ def run_ingestion() -> dict:
         "newsapi": ingest_newsapi(),
         "un_comtrade": ingest_comtrade(),
     }
+    rag_index = index_documents(datastore.list_documents())
     risk_scores = recalculate_live_risk_scores()
     return {
         "status": "ok",
@@ -37,6 +39,7 @@ def run_ingestion() -> dict:
             "kaggle": "seed-data",
         },
         "live": live_sources,
+        "rag_index": rag_index,
         "seeded": seeded,
         "risk_scores": [
             {"region": result.region, "score": result.score, "level": result.level.value}

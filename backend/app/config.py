@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     app_name: str = "AI Supply Chain Risk Assistant"
     frontend_origin: str = "http://localhost:5173"
     openai_model: str = "gpt-4o-mini"
+    openai_embedding_model: str = "text-embedding-3-small"
+    qdrant_collection: str = "supply_chain_documents"
 
     openai_api_key: str | None = None
     supabase_url: str | None = None
