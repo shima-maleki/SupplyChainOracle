@@ -1,12 +1,11 @@
 from fastapi import APIRouter
 
 from backend.app.agent.supply_chain_agent import answer_question
-from backend.app.risk.scoring import calculate_risk_score
 from backend.app.schemas.chat import ChatRequest, ChatResponse
 from backend.app.schemas.risk import DashboardSummary, Disruption, Document, Region, RiskScoreResult
 from backend.app.services.datastore import datastore
 from backend.app.services.ingestion import run_ingestion
-from backend.app.services.mock_data import RISK_INPUTS
+from backend.app.services.risk_recalculation import calculate_live_risk_scores, recalculate_live_risk_scores
 
 router = APIRouter()
 
@@ -38,12 +37,12 @@ def documents() -> list[Document]:
 
 @router.get("/risk/scores", response_model=list[RiskScoreResult])
 def risk_scores() -> list[RiskScoreResult]:
-    return [calculate_risk_score(region, inputs) for region, inputs in RISK_INPUTS.items()]
+    return calculate_live_risk_scores()
 
 
 @router.post("/risk/recalculate", response_model=list[RiskScoreResult])
 def recalculate_risk() -> list[RiskScoreResult]:
-    return risk_scores()
+    return recalculate_live_risk_scores()
 
 
 @router.post("/assistant/chat", response_model=ChatResponse)

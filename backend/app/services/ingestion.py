@@ -4,6 +4,7 @@ from backend.app.integrations.comtrade import COMTRADE_PERIOD, COMTRADE_TRADE_LA
 from backend.app.integrations.newsapi import NEWS_KEYWORDS, fetch_news_documents
 from backend.app.integrations.openweather import WEATHER_REGIONS, fetch_weather_disruptions
 from backend.app.services.datastore import datastore
+from backend.app.services.risk_recalculation import recalculate_live_risk_scores
 
 
 def run_ingestion() -> dict:
@@ -18,6 +19,7 @@ def run_ingestion() -> dict:
         "newsapi": ingest_newsapi(),
         "un_comtrade": ingest_comtrade(),
     }
+    risk_scores = recalculate_live_risk_scores()
     return {
         "status": "ok",
         "mode": "live-plus-mock-seed" if any(source["saved"] for source in live_sources.values()) else "mock-seed",
@@ -36,6 +38,10 @@ def run_ingestion() -> dict:
         },
         "live": live_sources,
         "seeded": seeded,
+        "risk_scores": [
+            {"region": result.region, "score": result.score, "level": result.level.value}
+            for result in risk_scores
+        ],
         "message": "Ingestion completed with live fetch attempts and MVP seed fallback.",
     }
 
