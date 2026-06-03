@@ -6,6 +6,7 @@ from backend.app.schemas.risk import DashboardSummary, Disruption, Document, Reg
 from backend.app.services.datastore import datastore
 from backend.app.services.ingestion import run_ingestion
 from backend.app.services.risk_recalculation import calculate_live_risk_scores, recalculate_live_risk_scores
+from backend.app.services.system_status import system_status
 
 router = APIRouter()
 
@@ -33,6 +34,11 @@ def disruptions() -> list[Disruption]:
 @router.get("/documents", response_model=list[Document])
 def documents() -> list[Document]:
     return datastore.list_documents()
+
+
+@router.get("/system/status")
+def status() -> dict:
+    return system_status()
 
 
 @router.get("/risk/scores", response_model=list[RiskScoreResult])

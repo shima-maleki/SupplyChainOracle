@@ -1,12 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, AlertTriangle, Bot, CloudRain, Database, MapPin, Send, Ship, TrendingUp } from "lucide-react";
+import { Activity, AlertTriangle, Bot, CheckCircle2, CloudRain, Database, MapPin, Send, Ship, TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { ReactNode } from "react";
 
-import { askAssistant, getDashboard } from "./lib/api";
+import { askAssistant, getDashboard, getSystemStatus } from "./lib/api";
 import { fallbackDashboard } from "./lib/fallbackData";
-import type { ChatResponse, DashboardSummary, Region, RiskLevel } from "./types/api";
+import type { ChatResponse, DashboardSummary, Region, RiskLevel, SystemStatus } from "./types/api";
 import "./styles.css";
 import { useEffect, useMemo, useState } from "react";
 
@@ -18,13 +18,15 @@ const levelClass: Record<RiskLevel, string> = {
 
 function App() {
   const [dashboard, setDashboard] = useState<DashboardSummary>(fallbackDashboard);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getDashboard()
-      .then((data) => {
+    Promise.all([getDashboard(), getSystemStatus()])
+      .then(([data, status]) => {
         setDashboard(data);
+        setSystemStatus(status);
         setError(null);
       })
       .catch(() => {
@@ -74,6 +76,8 @@ function App() {
           <Metric title="Data Sources" value={4} icon={<Database />} detail="Weather, news, trade, history" />
         </section>
 
+        {systemStatus ? <SystemStatusPanel status={systemStatus} /> : null}
+
         <section className="dashboard-grid">
           <div className="panel wide">
             <PanelHeader title="Regional Risk Scores" icon={<MapPin />} />
@@ -106,6 +110,40 @@ function App() {
         </section>
       </section>
     </main>
+  );
+}
+
+function SystemStatusPanel({ status }: { status: SystemStatus }) {
+  const serviceLabels: Record<keyof SystemStatus["services"], string> = {
+    supabase: "Supabase",
+    qdrant: "Qdrant",
+    openai: "OpenAI",
+    newsapi: "NewsAPI",
+    openweather: "OpenWeather",
+    un_comtrade: "UN Comtrade"
+  };
+
+  return (
+    <section className="panel status-panel">
+      <PanelHeader title="Live Systems" icon={<CheckCircle2 />} />
+      <div className="status-grid">
+        {Object.entries(status.services).map(([service, connected]) => (
+          <div key={service} className="status-item">
+            <span className={connected ? "dot dot-on" : "dot dot-off"} />
+            <div>
+              <strong>{serviceLabels[service as keyof SystemStatus["services"]]}</strong>
+              <small>{connected ? "Connected" : "Not configured"}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="status-meta">
+        <span>Chat: {status.models.chat}</span>
+        <span>Embedding: {status.models.embedding}</span>
+        <span>RAG docs: {status.rag.documents}</span>
+        <span>Trade metrics: {status.data.trade_metrics}</span>
+      </div>
+    </section>
   );
 }
 

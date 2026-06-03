@@ -52,6 +52,23 @@ export type DashboardSummary = {
   historical_shipments: HistoricalShipment[];
 };
 
+export type SystemStatus = {
+  services: Record<"supabase" | "qdrant" | "openai" | "newsapi" | "openweather" | "un_comtrade", boolean>;
+  models: {
+    chat: string;
+    embedding: string;
+  };
+  rag: {
+    collection: string;
+    documents: number;
+    indexed: boolean;
+  };
+  data: {
+    disruptions: number;
+    trade_metrics: number;
+  };
+};
+
 export type ChatResponse = {
   summary: string;
   risk_level: RiskLevel;

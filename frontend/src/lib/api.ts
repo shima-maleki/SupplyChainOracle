@@ -1,4 +1,4 @@
-import type { ChatResponse, DashboardSummary } from "../types/api";
+import type { ChatResponse, DashboardSummary, SystemStatus } from "../types/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -17,6 +17,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function getDashboard(): Promise<DashboardSummary> {
   return request<DashboardSummary>("/dashboard");
+}
+
+export function getSystemStatus(): Promise<SystemStatus> {
+  return request<SystemStatus>("/system/status");
 }
 
 export function askAssistant(question: string): Promise<ChatResponse> {

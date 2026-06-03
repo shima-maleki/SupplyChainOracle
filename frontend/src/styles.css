@@ -155,6 +155,60 @@ nav a:hover {
   margin-bottom: 16px;
 }
 
+.status-panel {
+  margin-bottom: 16px;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.status-item strong,
+.status-item small {
+  display: block;
+}
+
+.status-item small,
+.status-meta {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.dot-on {
+  background: #16a34a;
+}
+
+.dot-off {
+  background: #cbd5e1;
+}
+
+.status-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
 .panel {
   padding: 18px;
 }
@@ -318,7 +372,8 @@ nav a:hover {
   }
 
   .metric-grid,
-  .dashboard-grid {
+  .dashboard-grid,
+  .status-grid {
     grid-template-columns: 1fr;
   }
 }
