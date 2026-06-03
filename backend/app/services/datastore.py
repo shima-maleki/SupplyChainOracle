@@ -132,6 +132,12 @@ class Datastore:
             ),
         }
 
+    def save_disruptions(self, disruptions: list[Disruption]) -> int:
+        return self.supabase.upsert_rows("disruptions", disruptions)
+
+    def save_documents(self, documents: list[Document]) -> int:
+        return self.supabase.upsert_rows("documents", documents)
+
     def dashboard_summary(self) -> DashboardSummary:
         regions = self.list_regions()
         disruptions = self.list_disruptions()
