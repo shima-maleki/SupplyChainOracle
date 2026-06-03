@@ -1,5 +1,6 @@
 import httpx
 
+from backend.app.integrations.comtrade import COMTRADE_PERIOD, COMTRADE_TRADE_LANES, fetch_trade_metrics
 from backend.app.integrations.newsapi import NEWS_KEYWORDS, fetch_news_documents
 from backend.app.integrations.openweather import WEATHER_REGIONS, fetch_weather_disruptions
 from backend.app.services.datastore import datastore
@@ -15,6 +16,7 @@ def run_ingestion() -> dict:
     live_sources = {
         "openweather": ingest_openweather(),
         "newsapi": ingest_newsapi(),
+        "un_comtrade": ingest_comtrade(),
     }
     return {
         "status": "ok",
@@ -25,7 +27,11 @@ def run_ingestion() -> dict:
                 "regions": list(WEATHER_REGIONS),
             },
             "newsapi": {"ready": True, "keywords": NEWS_KEYWORDS},
-            "un_comtrade": "ready",
+            "un_comtrade": {
+                "ready": True,
+                "period": COMTRADE_PERIOD,
+                "lanes": len(COMTRADE_TRADE_LANES),
+            },
             "kaggle": "seed-data",
         },
         "live": live_sources,
@@ -57,4 +63,17 @@ def ingest_newsapi() -> dict[str, int | str | None]:
         "fetched": len(documents),
         "saved": datastore.save_documents(documents),
         "error": None,
+    }
+
+
+def ingest_comtrade() -> dict[str, int | str | None]:
+    try:
+        trade_metrics, errors = fetch_trade_metrics()
+    except httpx.HTTPError as exc:
+        return {"fetched": 0, "saved": 0, "error": str(exc)}
+
+    return {
+        "fetched": len(trade_metrics),
+        "saved": datastore.save_trade_metrics(trade_metrics),
+        "error": "; ".join(errors) if errors else None,
     }

@@ -138,6 +138,9 @@ class Datastore:
     def save_documents(self, documents: list[Document]) -> int:
         return self.supabase.upsert_rows("documents", documents)
 
+    def save_trade_metrics(self, trade_metrics: list[TradeMetric]) -> int:
+        return self.supabase.upsert_rows("trade_metrics", trade_metrics)
+
     def dashboard_summary(self) -> DashboardSummary:
         regions = self.list_regions()
         disruptions = self.list_disruptions()
