@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "AI Supply Chain Risk Assistant"
     frontend_origin: str = "http://localhost:5173"
+    openai_model: str = "gpt-4o-mini"
 
     openai_api_key: str | None = None
     supabase_url: str | None = None
